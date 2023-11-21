@@ -1,6 +1,7 @@
 #pragma once
 
 #include <iostream>
+
 template <class T>
 class UniquePtr {
 public:
@@ -13,13 +14,13 @@ public:
         o.ptr = nullptr;
     }
 
-    UniquePtr& operator=(UniquePtr&& o) {
-        if (&o == this) {
+    UniquePtr& operator=(UniquePtr&& rhs) {
+        if (&rhs == this) {
             return *this;
         }
         delete ptr;
-        ptr = o.ptr;
-        o.ptr = nullptr;
+        ptr = rhs.ptr;
+        rhs.ptr = nullptr;
         return *this;
     }
 
@@ -37,6 +38,8 @@ private:
 
 
 // ================================================
+
+
 struct RefCntBlock {
     size_t strong, weak;
 };
@@ -48,11 +51,11 @@ template <class T>
 class SharedPtr {
     friend class WeakPtr<T>;
 public:
-    SharedPtr() : s_ptr(nullptr), cnt(nullptr) {}
-    SharedPtr(const SharedPtr& o) : s_ptr(o.s_ptr), cnt(o.cnt) { if (cnt) ++cnt->strong; }
+    SharedPtr(): s_ptr(nullptr), cnt(nullptr) {}
+    SharedPtr(const SharedPtr& o): s_ptr(o.s_ptr), cnt(o.cnt) { if (cnt) ++cnt->strong; }
     SharedPtr& operator=(const SharedPtr& o) {
         if (this != &o) {
-            this->~SharedPtr();
+            (*this).~SharedPtr();
             s_ptr = o.s_ptr;
             cnt = o.cnt;
             if (cnt) ++cnt->strong;
@@ -60,32 +63,31 @@ public:
         return *this;
     }
 
-    SharedPtr(SharedPtr&& o) : s_ptr(o.s_ptr), cnt(o.cnt) {
-        o.s_ptr = nullptr;
-        o.cnt = nullptr;
+    SharedPtr(SharedPtr&& rhs): s_ptr(rhs.s_ptr), cnt(rhs.cnt) {
+        rhs.s_ptr = nullptr;
+        rhs.cnt = nullptr;
     }
 
-    SharedPtr& operator=(SharedPtr&& o) {
-        if (this != &o) {
-            this->~SharedPtr();
-            s_ptr = o.s_ptr;
-            cnt = o.cnt;
-            o.s_ptr = nullptr;
-            o.cnt = nullptr;
+    SharedPtr& operator=(SharedPtr&& rhs) {
+        if (this != &rhs) {
+            //std::cerr << "strong: " << cnt->strong << "\n";
+            (*this).~SharedPtr();
+            s_ptr = rhs.s_ptr;
+            cnt = rhs.cnt;
+            rhs.s_ptr = nullptr;
+            rhs.cnt = nullptr;
         }
         return *this;
     }
 
-    SharedPtr(T* p) : s_ptr(p), cnt(new RefCntBlock{1, 0}) {}
+    SharedPtr(T* p): s_ptr(p), cnt(new RefCntBlock{1, 0}) {}
 
-    // Implementation below
     SharedPtr(const WeakPtr<T>& o) : s_ptr(o.w_ptr), cnt(o.cnt) {
         if (cnt) ++cnt->strong;
     }
 
-    // Replaces pointer with nullptr
     void Reset() {
-        this->~SharedPtr();
+        (*this).~SharedPtr();
         s_ptr = nullptr;
         cnt = nullptr;
     }
@@ -95,13 +97,13 @@ public:
     T& operator*() { return *s_ptr; }
 
     ~SharedPtr () {
-        if (cnt) {
-            if (--cnt->strong == 0) {
-                delete s_ptr;
-                if (cnt->weak == 0) {
-                    delete cnt;
-                }
-            }
+        if (!cnt) {return;}
+        //std::cerr << "strong: " << cnt->strong << ""weak: << cnt->weak << "\n";
+        if (--cnt->strong == 0) {
+            delete s_ptr;
+            if (cnt->weak == 0) {
+                delete cnt;
+            }    
         }
     }
 
@@ -115,55 +117,58 @@ template <class T>
 class WeakPtr {
     friend class SharedPtr<T>;
 public:
-    WeakPtr() : w_ptr(nullptr), cnt(nullptr) {}
-    WeakPtr(const WeakPtr& o) : w_ptr(o.w_ptr), cnt(o.cnt) { if (cnt) ++cnt->weak; }
+    WeakPtr(): w_ptr(nullptr), cnt(nullptr) {}
+    WeakPtr(const WeakPtr& o): w_ptr(o.w_ptr), cnt(o.cnt) { if (cnt) ++cnt->weak; }
     WeakPtr& operator=(const WeakPtr& o) {
         if (this != &o) {
-            this->~WeakPtr();
+            (*this).~WeakPtr();
             w_ptr = o.w_ptr;
             cnt = o.cnt;
-            if (cnt) ++cnt->weak;
+            if (cnt) {++cnt->weak;}
         }
         return *this;
     }
 
-    WeakPtr(WeakPtr&& o) : w_ptr(o.w_ptr), cnt(o.cnt) {
-        o.w_ptr = nullptr;
-        o.cnt = nullptr;
+    WeakPtr(WeakPtr&& rhs): w_ptr(rhs.w_ptr), cnt(rhs.cnt) {
+        rhs.w_ptr = nullptr;
+        rhs.cnt = nullptr;
     }
 
-    WeakPtr& operator=(WeakPtr&& o) {
-        if (this != &o) {
-            this->~WeakPtr();
-            w_ptr = o.w_ptr;
-            cnt = o.cnt;
-            o.w_ptr = nullptr;
-            o.cnt = nullptr;
+    WeakPtr& operator=(WeakPtr&& rhs) {
+        if (this != &rhs) {
+            (*this).~WeakPtr();
+            w_ptr = rhs.w_ptr;
+            cnt = rhs.cnt;
+            rhs.w_ptr = nullptr;
+            rhs.cnt = nullptr;
         }
         return *this;
     }
 
-    WeakPtr(const SharedPtr<T>& o) : w_ptr(o.s_ptr), cnt(o.cnt) { if (cnt) ++cnt->weak; }
+    WeakPtr(const SharedPtr<T>& o): w_ptr(o.s_ptr), cnt(o.cnt) { if (cnt) ++cnt->weak; }
 
     WeakPtr& operator=(const SharedPtr<T>& o) {
-        this->~WeakPtr();
+        (*this).~WeakPtr();
         w_ptr = o.s_ptr;
         cnt = o.cnt;
-        if (cnt) ++cnt->weak;
+        //std::cerr << "weak: " << cnt->weak << "\n";
+        if (cnt) {++cnt->weak;}
+        //std::cerr << "weak: " << cnt->weak << "\n";
         return *this;
     }
 
-    // Replaces pointer with nullptr
     void Reset() {
-        this->~WeakPtr();
+        (*this).~WeakPtr();
         w_ptr = nullptr;
         cnt = nullptr;
     }
 
     bool Expired() const { 
         if (!cnt || cnt->strong == 0) {
+            // std::cerr << "HERE1\n";
             return true;
         } else {
+            // std::cerr << "HERE2\n";
             return false;
         }
     }
@@ -177,7 +182,9 @@ public:
     }
 
     ~WeakPtr () {
-        if (cnt && --cnt->weak == 0 && cnt->strong == 0) {
+        if (!cnt){return;}
+        //std::cerr << "strong: " << cnt->strong << ""weak: << cnt->weak << "\n";
+        if (--cnt->weak == 0 && cnt->strong == 0) {
             delete cnt;
         }
     }

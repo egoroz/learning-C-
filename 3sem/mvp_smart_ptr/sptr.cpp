@@ -147,6 +147,9 @@ TEST_CASE ( "Hostile types with shared ptr" , "[shared_ptr]" ) {
     REQUIRE(q->Get() == 5);
     
     p = std::move(q);
+    q = std::move(p);
+    p = std::move(q);
+    p = std::move(p);
     REQUIRE(p->Get() == 5);
     
     q = p;
