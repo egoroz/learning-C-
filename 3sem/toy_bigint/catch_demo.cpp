@@ -22,7 +22,7 @@ i64 CreateTempBasedOnBigInt(BigInt big){
 
 void CheckIsReadOk(const std::string& text, i64 value) {
   BigInt b(text);
-  // b.Write_In_65536_Binary_System();
+  // b.BinaryWrite();
   i64 t = CreateTempBasedOnBigInt(b);
   if (b.sign == -1){t = -t;}
 
@@ -33,20 +33,20 @@ void CheckMult(const char* text_a, i64 a, const char* text_b, i64 b){
   BigInt big1(text_a);
   BigInt big2(text_b);
 
-  // big1.Write_In_65536_Binary_System();
-  // big2.Write_In_65536_Binary_System();
+  // big1.BinaryWrite();
+  // big2.BinaryWrite();
 
   BigInt total_big = big1 * big2;
   i64 t2 = CreateTempBasedOnBigInt(total_big);
 
   // std::cerr << "Произведение: * \n";
-  // total_big.Write_In_65536_Binary_System();
+  // total_big.BinaryWrite();
 
   big1 *= big2;
   i64 t1 = CreateTempBasedOnBigInt(big1);
 
   // std::cerr << "Произведение: *= \n";
-  // big1.Write_In_65536_Binary_System();
+  // big1.BinaryWrite();
 
   if (total_big.sign == -1){t2 = -t2;}
   if (big1.sign == -1){t1 = -t1;}
@@ -61,20 +61,20 @@ void CheckSum(const char* text_a, i64 a, const char* text_b, i64 b){
   BigInt big1(text_a);
   BigInt big2(text_b);
 
-  // big1.Write_In_65536_Binary_System();
-  // big2.Write_In_65536_Binary_System();
+  // big1.BinaryWrite();
+  // big2.BinaryWrite();
 
   BigInt total_big = big1 + big2;
   i64 t1 = CreateTempBasedOnBigInt(total_big);
 
   // std::cerr << "Сумма + :\n";
-  // total_big.Write_In_65536_Binary_System();
+  // total_big.BinaryWrite();
   
   big1 += big2;
   i64 t2 = CreateTempBasedOnBigInt(big1);
 
   // std::cerr << "Сумма +=:\n";
-  // (big1).Write_In_65536_Binary_System();
+  // (big1).BinaryWrite();
 
   if (total_big.sign == -1){t1 = -t1;}
   if (big1.sign == -1){t2 = -t2;}
@@ -89,21 +89,21 @@ void CheckDif(const char* text_a, i64 a, const char* text_b, i64 b){
   BigInt big1(text_a);
   BigInt big2(text_b);
 
-  // big1.Write_In_65536_Binary_System();
-  // big2.Write_In_65536_Binary_System();
+  // big1.BinaryWrite();
+  // big2.BinaryWrite();
 
   BigInt total_big = big1 - big2;
   i64 t1 = CreateTempBasedOnBigInt(total_big);
   
   // std::cerr << "Разность: - \n";
-  // total_big.Write_In_65536_Binary_System();
+  // total_big.BinaryWrite();
 
 
   big1 -= big2;
   i64 t2 = CreateTempBasedOnBigInt(big1);
 
   // std::cerr << "Разность: -= \n";
-  // big1.Write_In_65536_Binary_System();
+  // big1.BinaryWrite();
 
   if (total_big.sign == -1){t1 = -t1;}
   if (big1.sign == -1){t2 = -t2;}
@@ -122,7 +122,7 @@ void CheckIncDec(const char* text, i64 a){
   if(big.sign == -1){t = -t;}
   flag = (t == (++a));
 
-  // big.Write_In_65536_Binary_System();
+  // big.BinaryWrite();
   // std::cout << t << ' ' << flag << '\n';
 
   
@@ -133,7 +133,7 @@ void CheckIncDec(const char* text, i64 a){
   flag = (flag && (t == --a));
   
 
-  // big.Write_In_65536_Binary_System();
+  // big.BinaryWrite();
   // std::cout << t << '\n';
   // std::cout << t << ' ' << flag << '\n';
 
@@ -142,7 +142,7 @@ void CheckIncDec(const char* text, i64 a){
   if(big.sign == -1){t = -t;}
   flag = (flag && (t == ++a));
 
-  // big.Write_In_65536_Binary_System();
+  // big.BinaryWrite();
   // std::cout << t << '\n';
   // std::cout << t << ' ' << flag << '\n';
 
@@ -151,7 +151,7 @@ void CheckIncDec(const char* text, i64 a){
   if(big.sign == -1){t = -t;}
   flag = (flag && (t == --a));
 
-  // big.Write_In_65536_Binary_System();
+  // big.BinaryWrite();
   // std::cout << t << '\n';
   // std::cout << t << ' ' << flag << '\n';
 

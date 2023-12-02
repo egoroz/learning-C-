@@ -48,9 +48,9 @@ public:
     bool operator>(const BigInt&);
     bool operator>=(const BigInt&);
 
-    void Delete_Leading_Zeros();
-    void Set_Size(size_t);
-    void Write_In_65536_Binary_System();
+    void DeleteLeadingZeros();
+    void SetSize(size_t);
+    void BinaryWrite();
 };
 
 BigInt& BigInt::operator++(){
@@ -203,7 +203,7 @@ BigInt& BigInt::operator+=(const BigInt& rhs){
 
         else if (sign == 0 && rhs.sign == -1){nums = rhs.nums; sign = -1;}
     }
-    Delete_Leading_Zeros();
+    DeleteLeadingZeros();
     return *this;
 }
 
@@ -214,20 +214,20 @@ BigInt& BigInt::operator-=(const BigInt& rhs){
 
     if (sign == 1){sign = -1;} 
     else if (sign == -1){sign = 1;}
-    Delete_Leading_Zeros();
+    DeleteLeadingZeros();
     return *this;
 }
 
 BigInt& BigInt::operator*=(const BigInt& rhs){
     if(sign * rhs.sign == -1){sign = -1;}
     else if(sign* rhs.sign == 1){sign = 1;}
-    else if(sign == 0){Delete_Leading_Zeros(); return *this;}
+    else if(sign == 0){DeleteLeadingZeros(); return *this;}
     else if(rhs.sign == 0){*this = 0; return *this;}
 
     BigInt prod;
-    prod.Set_Size(nums.size() * rhs.nums.size() + 1);
+    prod.SetSize(nums.size() * rhs.nums.size() + 1);
     BigInt t;
-    t.Set_Size(nums.size() * rhs.nums.size() + 1);
+    t.SetSize(nums.size() * rhs.nums.size() + 1);
 
     for(size_t i = 0; i < nums.size(); ++i){
         t = 0;
@@ -237,7 +237,7 @@ BigInt& BigInt::operator*=(const BigInt& rhs){
             t1 = nums[i] * rhs.nums[j];
             if (t.nums[j+i] > u16_max - t1){ t.nums[i+j+1]++; } 
             t.nums[i+j] += static_cast<u16>(t1);
-                    // t.Write_In_65536_Binary_System();
+                    // t.BinaryWrite();
 
 
             // std::cout<<t1<<' ';
@@ -246,18 +246,18 @@ BigInt& BigInt::operator*=(const BigInt& rhs){
 
             if (t.nums[j+i+1] > u16_max - t1){ t.nums[j+i+2]++; } 
             t.nums[j+i+1] += static_cast<u16>(t1);
-                    // t.Write_In_65536_Binary_System();
+                    // t.BinaryWrite();
 
         }
         for (size_t i = 0; i < t.nums.size(); ++i){if (nums[i] != 0){t.sign = 1; break;}}
-                            // t.Write_In_65536_Binary_System();
+                            // t.BinaryWrite();
         prod += t;
-                            // prod.Write_In_65536_Binary_System();
+                            // prod.BinaryWrite();
 
     }
-    // prod.Write_In_65536_Binary_System();
-    prod.Delete_Leading_Zeros();
-    // prod.Write_In_65536_Binary_System();
+    // prod.BinaryWrite();
+    prod.DeleteLeadingZeros();
+    // prod.BinaryWrite();
     nums = prod.nums;
     return *this;
 }
@@ -334,7 +334,7 @@ bool BigInt::operator>(const BigInt& rhs){
     return !(*this <= rhs);
 }
 
-void BigInt::Delete_Leading_Zeros(){
+void BigInt::DeleteLeadingZeros(){
     size_t need = 0;
     for(size_t i = nums.size() - 1; 1 < i; --i){
         if(nums[i] == 0){++need;}
@@ -345,7 +345,7 @@ void BigInt::Delete_Leading_Zeros(){
     }
 }
 
-void BigInt::Set_Size(size_t size){
+void BigInt::SetSize(size_t size){
     auto n = size - nums.size();
     if (size < n){return;}
     for (size_t i = 0; i < n; ++i){nums.push_back(0);};
@@ -358,7 +358,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<u16> &input){
     return os;
 }
 
-void BigInt::Write_In_65536_Binary_System(){
+void BigInt::BinaryWrite(){
         std::cout << " [" << "SIGN: " << sign << " | ";
         std::cout << nums << "]\n";
 }
